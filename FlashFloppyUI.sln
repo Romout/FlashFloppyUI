@@ -4,6 +4,8 @@ VisualStudioVersion = 17.14.35906.104
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlashFloppyUI", "FlashFloppyUI.csproj", "{BD63C8A4-3AD2-4FE8-91C9-042873D59CA4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ADFSharp", "..\ADFSharp\ADFSharp.csproj", "{DCB0C480-BE7F-49F1-9064-5884F66A9420}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -14,6 +16,10 @@ Global
 		{BD63C8A4-3AD2-4FE8-91C9-042873D59CA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD63C8A4-3AD2-4FE8-91C9-042873D59CA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD63C8A4-3AD2-4FE8-91C9-042873D59CA4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCB0C480-BE7F-49F1-9064-5884F66A9420}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCB0C480-BE7F-49F1-9064-5884F66A9420}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCB0C480-BE7F-49F1-9064-5884F66A9420}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCB0C480-BE7F-49F1-9064-5884F66A9420}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
