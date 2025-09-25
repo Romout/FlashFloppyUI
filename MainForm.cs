@@ -5,17 +5,9 @@ namespace FlashFloppyUI
 {
 	public partial class MainForm : Form
 	{
-		/// <summary>
-		/// Converts an item identifier list to a file system path. (Note: SHGetPathFromIDList calls the ANSI version, must call SHGetPathFromIDListW for .NET)
-		/// </summary>
-		/// <param name="pidl">Address of an item identifier list that specifies a file or directory location relative to the root of the namespace (the desktop).</param>
-		/// <param name="pszPath">Address of a buffer to receive the file system path. This buffer must be at least MAX_PATH characters in size.</param>
-		/// <returns>Returns TRUE if successful, or FALSE otherwise. </returns>
-		[DllImport("shell32.dll")]
-		[return: MarshalAs(UnmanagedType.Bool)]
-		public static extern bool SHGetPathFromIDListW(uint pidl, [MarshalAs(UnmanagedType.LPTStr)] ref string pszPath);
-
 		private Models.Configuration _configuration = new Models.Configuration();
+		ADFSharp.ADFLib _adf;
+
 		public MainForm()
 		{
 			InitializeComponent();
@@ -66,6 +58,23 @@ namespace FlashFloppyUI
 			{
 				if (item is DataGridViewRow row && row.DataBoundItem is Models.ADFFileReference reference)
 					_configuration.ADFFileReferences.Remove(reference);
+			}
+		}
+
+		private void buttonUpdate_Click(object sender, EventArgs e)
+		{
+			ADFSharp.ADFLib adf = new ADFSharp.ADFLib();
+			var device = adf.CreateDevice("test.adf");
+			if (adf.CreateFloppy(device, "Super Floppy!"))
+			{
+				var volume = adf.MountFloppy(device);
+				var file = adf.OpenFile(volume, "TEST.TXT", false, true);
+				var buf = Encoding.ASCII.GetBytes("Hello from FlashFloppyUI!");
+				adf.WriteFile(file, buf, 0, buf.Length);
+				adf.CloseFile(file);
+				adf.UnmountFloppy(volume);
+				adf.UnmountDevice(device);
+				adf.CleanUpEnvironment();
 			}
 		}
 	}

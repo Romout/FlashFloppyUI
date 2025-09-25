@@ -116,6 +116,7 @@
 			buttonUpdate.Name = "buttonUpdate";
 			buttonUpdate.Size = new Size(165, 22);
 			buttonUpdate.Text = "Update USB Drive Content";
+			buttonUpdate.Click += buttonUpdate_Click;
 			// 
 			// buttonClose
 			// 
