@@ -6,7 +6,6 @@ namespace FlashFloppyUI
 	public partial class MainForm : Form
 	{
 		private Models.Configuration _configuration = new Models.Configuration();
-		ADFSharp.ADFLib _adf;
 
 		public MainForm()
 		{
@@ -61,20 +60,32 @@ namespace FlashFloppyUI
 			}
 		}
 
+		private void Log(string message, IntPtr args)
+		{
+			Console.WriteLine(message);
+		}
+		private void Notify(uint sectNum, int value)
+		{ }
+
 		private void buttonUpdate_Click(object sender, EventArgs e)
 		{
-			ADFSharp.ADFLib adf = new ADFSharp.ADFLib();
-			var device = adf.CreateDevice("test.adf");
-			if (adf.CreateFloppy(device, "Super Floppy!"))
+			AdfSharp.Interop.AdfInterop.adfEnvSetFct(Log, Log, Log, Notify);
+			AdfSharp.Interop.AdfInterop.adfEnvSetProperty(AdfSharp.Interop.AdfEnvProperty.PR_EFCT, 1);
+			AdfSharp.Interop.AdfInterop.adfEnvSetProperty(AdfSharp.Interop.AdfEnvProperty.PR_WFCT, 1);
+			AdfSharp.Interop.AdfInterop.adfEnvSetProperty(AdfSharp.Interop.AdfEnvProperty.PR_VFCT, 1);
+			ADFSharp.InitializeEnvironment();
+
+			var device = ADFSharp.CreateDevice("test.adf");
+			if (ADFSharp.CreateFloppy(device, "Super Floppy!"))
 			{
-				var volume = adf.MountFloppy(device);
-				var file = adf.OpenFile(volume, "TEST.TXT", false, true);
+				var volume = ADFSharp.MountFloppy(device);
+				var file = ADFSharp.OpenFile(volume, "TEST.TXT", AdfSharp.Interop.AdfFileMode.Write);
 				var buf = Encoding.ASCII.GetBytes("Hello from FlashFloppyUI!");
-				adf.WriteFile(file, buf, 0, buf.Length);
-				adf.CloseFile(file);
-				adf.UnmountFloppy(volume);
-				adf.UnmountDevice(device);
-				adf.CleanUpEnvironment();
+				ADFSharp.WriteFile(file, buf);
+				ADFSharp.CloseFile(file);
+				ADFSharp.UnmountFloppy(volume);
+				ADFSharp.UnmountDevice(device);
+				ADFSharp.CleanUpEnvironment();
 			}
 		}
 	}
