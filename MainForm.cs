@@ -75,10 +75,16 @@ namespace FlashFloppyUI
 			AdfSharp.Interop.AdfInterop.adfEnvSetProperty(AdfSharp.Interop.AdfEnvProperty.PR_VFCT, 1);
 			ADFSharp.InitializeEnvironment();
 
-			var device = ADFSharp.CreateDevice("test.adf");
+			string fileName = "test.adf";
+			if (File.Exists(fileName))
+				File.Delete(fileName);
+
+			var device = ADFSharp.CreateDevice(Path.GetFullPath(fileName));
 			if (ADFSharp.CreateFloppy(device, "Super Floppy!"))
 			{
 				var volume = ADFSharp.MountFloppy(device);
+				ADFSharp.InstallBootBlock(volume);
+
 				var file = ADFSharp.OpenFile(volume, "TEST.TXT", AdfSharp.Interop.AdfFileMode.Write);
 				var buf = Encoding.ASCII.GetBytes("Hello from FlashFloppyUI!");
 				ADFSharp.WriteFile(file, buf);

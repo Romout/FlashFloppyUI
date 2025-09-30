@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using FlashFloppyUI.AdfSharp.Interop;
 
 namespace FlashFloppyUI
@@ -140,7 +142,12 @@ namespace FlashFloppyUI
 			private const string DllName = "adf.dll";
 			public const int ADF_DOSFS_DIRCACHE = 4;
 
-			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+            [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+            public static extern AdfRetCode adfLibInit();
+            [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+            public static extern void adfLibCleanUp();
+
+            [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
 			public static extern IntPtr adfDevCreate(
 				string driverName,
 				string name,
@@ -409,7 +416,12 @@ namespace FlashFloppyUI
 {
 	public static class ADFSharp
 	{
-		public static void InitializeEnvironment()
+		static ADFSharp()
+		{
+			AdfInterop.adfLibInit();
+		}
+
+        public static void InitializeEnvironment()
 		{
 			AdfInterop.adfEnvInitDefault();
 		}
@@ -421,7 +433,12 @@ namespace FlashFloppyUI
 
 		public static ADFDevice CreateDevice(string adfFile)
 		{
-			return new ADFDevice(AdfInterop.adfDevCreate("dump", Path.GetFullPath(adfFile), 80, 2, 11));
+            return new ADFDevice(AdfInterop.adfDevCreate("dump", adfFile, 80, 2, 11));
+		}
+
+		public static void MountDevice(ADFDevice device)
+		{
+			AdfInterop.adfDevMount(device.getPtr());
 		}
 
 		public static bool CreateFloppy(ADFDevice device, string floppyName)
@@ -444,6 +461,17 @@ namespace FlashFloppyUI
 		{
 			AdfInterop.adfDevUnMount(floppy.getPtr());
 		}
+
+		public static void InstallBootBlock(ADFVolume volume)
+		{
+			using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("FlashFloppyUI.stdboot3.bbk"))
+			using (var reader = new BinaryReader(stream))
+			{
+                byte[] data = reader.ReadBytes((int)stream.Length);
+				GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+				AdfInterop.adfVolInstallBootBlock(volume.getPtr(), handle.AddrOfPinnedObject());
+			}
+        }
 
 		public static void CloseDevice(ADFDevice floppy)
 		{

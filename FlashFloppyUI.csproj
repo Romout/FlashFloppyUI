@@ -12,6 +12,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="stdboot3.bbk" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="stdboot3.bbk" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
