@@ -60,19 +60,8 @@ namespace FlashFloppyUI
 			}
 		}
 
-		private void Log(string message, IntPtr args)
-		{
-			Console.WriteLine(message);
-		}
-		private void Notify(uint sectNum, int value)
-		{ }
-
 		private void buttonUpdate_Click(object sender, EventArgs e)
 		{
-			AdfSharp.Interop.AdfInterop.adfEnvSetFct(Log, Log, Log, Notify);
-			AdfSharp.Interop.AdfInterop.adfEnvSetProperty(AdfSharp.Interop.AdfEnvProperty.PR_EFCT, 1);
-			AdfSharp.Interop.AdfInterop.adfEnvSetProperty(AdfSharp.Interop.AdfEnvProperty.PR_WFCT, 1);
-			AdfSharp.Interop.AdfInterop.adfEnvSetProperty(AdfSharp.Interop.AdfEnvProperty.PR_VFCT, 1);
 			ADFSharp.InitializeEnvironment();
 
 			string fileName = "test.adf";
@@ -83,12 +72,23 @@ namespace FlashFloppyUI
 			if (ADFSharp.CreateFloppy(device, "Super Floppy!"))
 			{
 				var volume = ADFSharp.MountFloppy(device);
-				ADFSharp.InstallBootBlock(volume);
 
-				var file = ADFSharp.OpenFile(volume, "TEST.TXT", AdfSharp.Interop.AdfFileMode.Write);
+				var file = ADFSharp.OpenFile(volume, "files.txt", AdfSharp.Interop.AdfFileMode.Write);
 				var buf = Encoding.ASCII.GetBytes("Hello from FlashFloppyUI!");
 				ADFSharp.WriteFile(file, buf);
 				ADFSharp.CloseFile(file);
+
+				var retVal = ADFSharp.CreateDir(volume, volume.RootBlock, "s");
+				retVal = ADFSharp.ChangeDir(volume, "s");
+				file = ADFSharp.OpenFile(volume, "startup-sequence", AdfSharp.Interop.AdfFileMode.Write);
+				buf = Encoding.ASCII.GetBytes("echo\r\necho === FILE LIST ===\r\ntype files.txt\r\necho\r\necho === END ===\r\nendcli\r\n");
+				ADFSharp.WriteFile(file, buf);
+				ADFSharp.CloseFile(file);
+
+				ADFSharp.ToRootDir(volume);
+
+				ADFSharp.InstallBootBlock(volume);
+
 				ADFSharp.UnmountFloppy(volume);
 				ADFSharp.UnmountDevice(device);
 				ADFSharp.CleanUpEnvironment();
