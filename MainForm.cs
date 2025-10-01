@@ -80,7 +80,7 @@ namespace FlashFloppyUI
 
 				var retVal = ADFSharp.CreateDir(volume, volume.RootBlock, "s");
 				retVal = ADFSharp.ChangeDir(volume, "s");
-				file = ADFSharp.OpenFile(volume, "startup-sequence", AdfSharp.Interop.AdfFileMode.Write);
+				file = ADFSharp.OpenFile(volume, "Startup-Sequence", AdfSharp.Interop.AdfFileMode.Write);
 				buf = Encoding.ASCII.GetBytes("echo\r\necho === FILE LIST ===\r\ntype files.txt\r\necho\r\necho === END ===\r\nendcli\r\n");
 				ADFSharp.WriteFile(file, buf);
 				ADFSharp.CloseFile(file);
