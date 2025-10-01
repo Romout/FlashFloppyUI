@@ -83,13 +83,15 @@ namespace FlashFloppyUI
 			if (ADFSharp.CreateFloppy(device, "Super Floppy!"))
 			{
 				var volume = ADFSharp.MountFloppy(device);
-				ADFSharp.InstallBootBlock(volume);
 
 				var file = ADFSharp.OpenFile(volume, "TEST.TXT", AdfSharp.Interop.AdfFileMode.Write);
 				var buf = Encoding.ASCII.GetBytes("Hello from FlashFloppyUI!");
 				ADFSharp.WriteFile(file, buf);
 				ADFSharp.CloseFile(file);
-				ADFSharp.UnmountFloppy(volume);
+
+                ADFSharp.InstallBootBlock(volume, ADFSharp.BootBlockType.Kick13);
+
+                ADFSharp.UnmountFloppy(volume);
 				ADFSharp.UnmountDevice(device);
 				ADFSharp.CleanUpEnvironment();
 			}

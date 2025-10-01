@@ -358,7 +358,7 @@ namespace FlashFloppyUI
 
 			// Set callback functions (function pointers)
 			// Note: Delegates must be kept alive by the caller to avoid GC
-			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
 			public delegate void AdfLogFct([MarshalAs(UnmanagedType.LPStr)] string format, IntPtr args);
 
 			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -416,7 +416,29 @@ namespace FlashFloppyUI
 {
 	public static class ADFSharp
 	{
-		static ADFSharp()
+        // Boot Block Data (from ADFinder project)
+        private static byte[] _kick13BootBlock = {
+			0x44, 0x4F, 0x53, 0x00, 0xDF, 0x10, 0x1A, 0x2A, 0x00, 0x00, 0x03, 0x70, 0x43, 0xFA, 0x00, 0x18,
+			0x4E, 0xAE, 0xFF, 0xA0, 0x4A, 0x80, 0x67, 0x0A, 0x20, 0x40, 0x20, 0x68, 0x00, 0x16, 0x70, 0x00,
+			0x4E, 0x75, 0x70, 0xFF, 0x60, 0xFA, 0x64, 0x6F, 0x73, 0x2E, 0x6C, 0x69, 0x62, 0x72, 0x61, 0x72,
+			0x79, 0x00
+		};
+
+        private static byte[] _kick20BootBlock = {
+			0x44, 0x4F, 0x53, 0x01, 0x43, 0x1A, 0x4A, 0x2A, 0x00, 0x00, 0x03, 0x70, 0x43, 0xFA, 0x00, 0x18,
+			0x4E, 0xAE, 0xFF, 0xA0, 0x4A, 0x80, 0x67, 0x0A, 0x20, 0x40, 0x20, 0x68, 0x00, 0x16, 0x70, 0x00,
+			0x4E, 0x75, 0x70, 0xFF, 0x60, 0xFA, 0x64, 0x6F, 0x73, 0x2E, 0x6C, 0x69, 0x62, 0x72, 0x61, 0x72,
+			0x79, 0x00
+		};
+
+		public enum BootBlockType
+		{
+			Kick13,
+            Kick20,
+			Kick30,
+        }
+
+        static ADFSharp()
 		{
 			AdfInterop.adfLibInit();
 		}
@@ -462,15 +484,25 @@ namespace FlashFloppyUI
 			AdfInterop.adfDevUnMount(floppy.getPtr());
 		}
 
-		public static void InstallBootBlock(ADFVolume volume)
+		public static void InstallBootBlock(ADFVolume volume, BootBlockType type)
 		{
-			using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("FlashFloppyUI.stdboot3.bbk"))
-			using (var reader = new BinaryReader(stream))
+			byte[] data = null;
+			if (type == BootBlockType.Kick30)
 			{
-                byte[] data = reader.ReadBytes((int)stream.Length);
-				GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-				AdfInterop.adfVolInstallBootBlock(volume.getPtr(), handle.AddrOfPinnedObject());
+				using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("FlashFloppyUI.stdboot3.bbk"))
+				using (var reader = new BinaryReader(stream))
+				{
+					data = reader.ReadBytes((int)stream.Length);
+				}
 			}
+			else if (type == BootBlockType.Kick13)
+				data = _kick13BootBlock;
+			else
+				data = _kick20BootBlock;
+		
+			GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+			AdfInterop.adfVolInstallBootBlock(volume.getPtr(), handle.AddrOfPinnedObject());
+			handle.Free();
         }
 
 		public static void CloseDevice(ADFDevice floppy)
