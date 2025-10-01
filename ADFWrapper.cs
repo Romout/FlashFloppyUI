@@ -428,7 +428,7 @@ namespace FlashFloppyUI
 			public static extern uint adfFileWrite(
 				IntPtr file,
 				uint n,
-				ref byte[] buffer
+				IntPtr buffer
 			);
 
 			// Seek to a position in the file
@@ -664,7 +664,10 @@ namespace FlashFloppyUI
 
 		public static uint WriteFile(ADFFile file, byte[] buf)
 		{
-			return AdfInterop.adfFileWrite(file.getPtr(), (uint)buf.Length, ref buf);
+            GCHandle handle = GCHandle.Alloc(buf, GCHandleType.Pinned);
+            uint bytesWritten = AdfInterop.adfFileWrite(file.getPtr(), (uint)buf.Length, handle.AddrOfPinnedObject());
+			handle.Free();
+			return bytesWritten;
 
 		}
 		public static void CloseFile(ADFFile file)
