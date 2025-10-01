@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using FlashFloppyUI.AdfSharp.Interop;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FlashFloppyUI
 {
@@ -137,10 +138,129 @@ namespace FlashFloppyUI
 			}
 		}
 
+		[StructLayout(LayoutKind.Sequential)]
+		public struct AdfBitmap
+		{
+			public uint Size; // size in blocks
+
+			public IntPtr Blocks; // Pointer to ADF_SECTNUM array
+			public IntPtr Table; // Pointer to AdfBitmapBlock* array
+			public IntPtr BlocksChg; // Pointer to bool array
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct AdfVolume
+		{
+			public IntPtr Dev; // Pointer to AdfDevice
+
+			public uint FirstBlock; // First block of data area (from beginning of device)
+			public uint LastBlock; // Last block of data area (from beginning of device)
+			public uint RootBlock; // Root block (from FirstBlock)
+
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+			public char[] FsId; // Filesystem ID ("DOS", "PFS", etc.)
+			public byte FsType; // Filesystem type (e.g., FFS/OFS, DIRCACHE, INTERNATIONAL)
+
+			[MarshalAs(UnmanagedType.I1)]
+			public bool BootCode; // Indicates if boot code is present
+			[MarshalAs(UnmanagedType.I1)]
+			public bool ReadOnly; // Indicates if the volume is read-only
+
+			public uint DataBlockSize; // Data block size (e.g., 488 or 512)
+			public uint BlockSize; // Block size (e.g., 512)
+
+			public IntPtr VolName; // Pointer to volume name (char*)
+
+			[MarshalAs(UnmanagedType.I1)]
+			public bool Mounted; // Indicates if the volume is mounted
+
+			public AdfBitmap Bitmap; // Bitmap structure
+
+			public uint CurDirPtr; // Current directory pointer
+		}
+
 		public static class AdfInterop
 		{
 			private const string DllName = "adf.dll";
 			public const int ADF_DOSFS_DIRCACHE = 4;
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern AdfRetCode adfToRootDir(IntPtr vol);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern AdfRetCode adfChangeDir(IntPtr vol, string name);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern AdfRetCode adfParentDir(IntPtr vol);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern AdfRetCode adfEntryRead(IntPtr vol, uint nSect, ref ADFEntry entry, IntPtr entryBlk);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern IntPtr adfGetDirEnt(IntPtr vol, uint nSect);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern IntPtr adfGetRDirEnt(IntPtr vol, uint nSect, bool recurs);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern void adfFreeDirList(IntPtr list);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern void adfFreeEntry(ref ADFEntry entry);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern int adfGetEntry(IntPtr vol, uint dirPtr, string name, ref ADFEntry entry);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern uint adfGetEntryBlockNum(IntPtr vol, uint dirPtr, string name);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern uint adfGetEntryBlock(IntPtr vol, uint dirPtr, string name, IntPtr entry);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern AdfRetCode adfCreateFile(IntPtr vol, uint parent, string name, IntPtr fhdr);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern AdfRetCode adfCreateDir(IntPtr vol, uint parent, string name);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern uint adfCreateEntry(IntPtr vol, IntPtr dir, string name, uint thisSect);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern int adfRemoveEntry(IntPtr vol, uint pSect, string name);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern int adfRenameEntry(IntPtr vol, uint pSect, string oldName, uint nPSect, string newName);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern int adfSetEntryAccess(IntPtr vol, uint parSect, string name, int newAcc);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern int adfSetEntryComment(IntPtr vol, uint parSect, string name, string newCmt);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern bool adfIsDirEmpty(IntPtr dir);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern int adfDirCountEntries(IntPtr vol, uint dirPtr);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern int adfReadEntryBlock(IntPtr vol, uint nSect, IntPtr ent);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern int adfWriteEntryBlock(IntPtr vol, uint nSect, IntPtr ent);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern int adfWriteDirBlock(IntPtr vol, uint nSect, IntPtr dir);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern int adfEntBlock2Entry(IntPtr entryBlk, ref ADFEntry entry);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern uint adfNameToEntryBlk(IntPtr vol, IntPtr ht, string name, IntPtr entry, ref uint nUpdSect);
+
+			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern IntPtr adfEntryGetInfo(ref ADFEntry entry);
 
             [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
             public static extern AdfRetCode adfLibInit();
@@ -404,11 +524,38 @@ namespace FlashFloppyUI
 	public class ADFVolume : IntPtrContainer
 	{
 		internal ADFVolume(IntPtr ptr) : base(ptr) { }
+
+		private AdfVolume GetVolume() => Marshal.PtrToStructure<AdfVolume>(base._ptr);
+		public uint FirstBlock => GetVolume().FirstBlock;
+		public uint LastBlock => GetVolume().LastBlock;
+		public uint RootBlock => GetVolume().RootBlock;
+		public uint CurrentDirectory => GetVolume().CurDirPtr;
 	}
 
 	public class ADFFile : IntPtrContainer
 	{
 		internal ADFFile(IntPtr ptr) : base(ptr) { }
+	}
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct ADFEntry
+	{
+		public int Type;
+		public IntPtr Name; // char*
+		public uint Sector;
+		public uint Real;
+		public uint Parent;
+		public IntPtr Comment; // char*
+		public uint Size;
+		public int Access;
+
+		public int Year;
+		public int Month;
+		public int Days;
+
+		public int Hour;
+		public int Mins;
+		public int Secs;
 	}
 }
 
@@ -523,6 +670,143 @@ namespace FlashFloppyUI
 		public static void CloseFile(ADFFile file)
 		{
 			AdfInterop.adfFileClose(file.getPtr());
+		}
+
+		public static AdfRetCode ToRootDir(ADFVolume volume)
+		{
+			return AdfInterop.adfToRootDir(volume.getPtr());
+		}
+
+		public static AdfRetCode ChangeDir(ADFVolume volume, string name)
+		{
+			return AdfInterop.adfChangeDir(volume.getPtr(), name);
+		}
+
+		public static AdfRetCode ParentDir(ADFVolume volume)
+		{
+			return AdfInterop.adfParentDir(volume.getPtr());
+		}
+
+		public static AdfRetCode EntryRead(ADFVolume volume, uint sector, ref ADFEntry entry, IntPtr entryBlock)
+		{
+			return AdfInterop.adfEntryRead(volume.getPtr(), sector, ref entry, entryBlock);
+		}
+
+		public static IntPtr GetDirEnt(ADFVolume volume, uint sector)
+		{
+			return AdfInterop.adfGetDirEnt(volume.getPtr(), sector);
+		}
+
+		public static IntPtr GetRDirEnt(ADFVolume volume, uint sector, bool recursive)
+		{
+			return AdfInterop.adfGetRDirEnt(volume.getPtr(), sector, recursive);
+		}
+
+		public static void FreeDirList(IntPtr list)
+		{
+			AdfInterop.adfFreeDirList(list);
+		}
+
+		public static void FreeEntry(ref ADFEntry entry)
+		{
+			AdfInterop.adfFreeEntry(ref entry);
+		}
+
+		public static int GetEntry(ADFVolume volume, uint dirPtr, string name, ref ADFEntry entry)
+		{
+			return AdfInterop.adfGetEntry(volume.getPtr(), dirPtr, name, ref entry);
+		}
+
+		public static uint GetEntryBlockNum(ADFVolume volume, uint dirPtr, string name)
+		{
+			return AdfInterop.adfGetEntryBlockNum(volume.getPtr(), dirPtr, name);
+		}
+
+		public static uint GetEntryBlock(ADFVolume volume, uint dirPtr, string name, IntPtr entry)
+		{
+			return AdfInterop.adfGetEntryBlock(volume.getPtr(), dirPtr, name, entry);
+		}
+
+		public static AdfRetCode CreateFile(ADFVolume volume, uint parent, string name)
+		{
+			byte[] fileHeader = new byte[512];
+			GCHandle handle = GCHandle.Alloc(fileHeader, GCHandleType.Pinned);
+			AdfRetCode retVal = AdfInterop.adfCreateFile(volume.getPtr(), parent, name, handle.AddrOfPinnedObject());
+			handle.Free();
+			return retVal;
+		}
+
+		public static AdfRetCode CreateDir(ADFVolume volume, uint parent, string name)
+		{
+			return AdfInterop.adfCreateDir(volume.getPtr(), parent, name);
+		}
+
+		public static uint CreateEntry(ADFVolume volume, IntPtr dir, string name, uint thisSector)
+		{
+			return AdfInterop.adfCreateEntry(volume.getPtr(), dir, name, thisSector);
+		}
+
+		public static int RemoveEntry(ADFVolume volume, uint parentSector, string name)
+		{
+			return AdfInterop.adfRemoveEntry(volume.getPtr(), parentSector, name);
+		}
+
+		public static int RenameEntry(ADFVolume volume, uint parentSector, string oldName, uint newParentSector, string newName)
+		{
+			return AdfInterop.adfRenameEntry(volume.getPtr(), parentSector, oldName, newParentSector, newName);
+		}
+
+		public static int SetEntryAccess(ADFVolume volume, uint parentSector, string name, int newAccess)
+		{
+			return AdfInterop.adfSetEntryAccess(volume.getPtr(), parentSector, name, newAccess);
+		}
+
+		public static int SetEntryComment(ADFVolume volume, uint parentSector, string name, string newComment)
+		{
+			return AdfInterop.adfSetEntryComment(volume.getPtr(), parentSector, name, newComment);
+		}
+
+		public static bool IsDirEmpty(IntPtr dir)
+		{
+			return AdfInterop.adfIsDirEmpty(dir);
+		}
+
+		public static int DirCountEntries(ADFVolume volume, uint dirPtr)
+		{
+			return AdfInterop.adfDirCountEntries(volume.getPtr(), dirPtr);
+		}
+
+		public static int ReadEntryBlock(ADFVolume volume, uint sector, IntPtr entry)
+		{
+			return AdfInterop.adfReadEntryBlock(volume.getPtr(), sector, entry);
+		}
+
+		public static int WriteEntryBlock(ADFVolume volume, uint sector, IntPtr entry)
+		{
+			return AdfInterop.adfWriteEntryBlock(volume.getPtr(), sector, entry);
+		}
+
+		public static int WriteDirBlock(ADFVolume volume, uint sector, IntPtr dir)
+		{
+			return AdfInterop.adfWriteDirBlock(volume.getPtr(), sector, dir);
+		}
+
+		public static int EntBlockToEntry(IntPtr entryBlock, ref ADFEntry entry)
+		{
+			return AdfInterop.adfEntBlock2Entry(entryBlock, ref entry);
+		}
+
+		public static uint NameToEntryBlock(ADFVolume volume, IntPtr hashTable, string name, IntPtr entry, ref uint updatedSector)
+		{
+			return AdfInterop.adfNameToEntryBlk(volume.getPtr(), hashTable, name, entry, ref updatedSector);
+		}
+
+		public static string EntryGetInfo(ref ADFEntry entry)
+		{
+			IntPtr infoPtr = AdfInterop.adfEntryGetInfo(ref entry);
+			string info = Marshal.PtrToStringAnsi(infoPtr);
+			Marshal.FreeHGlobal(infoPtr); // Free the memory allocated by the native library
+			return info;
 		}
 	}
 }
