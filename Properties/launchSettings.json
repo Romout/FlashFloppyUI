@@ -2,7 +2,7 @@
   "profiles": {
     "FlashFloppyUI": {
       "commandName": "Project",
-      "nativeDebugging": true
+      "nativeDebugging": false
     }
   }
 }

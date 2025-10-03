@@ -29,8 +29,10 @@
 		private void InitializeComponent()
 		{
 			components = new System.ComponentModel.Container();
+			DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			gridView = new DataGridView();
+			Index = new DataGridViewTextBoxColumn();
 			nameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
 			filePathDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
 			aDFFileReferenceBindingSource = new BindingSource(components);
@@ -39,6 +41,8 @@
 			buttonRemove = new ToolStripButton();
 			buttonUpdate = new ToolStripButton();
 			buttonClose = new Button();
+			buttonSave = new ToolStripButton();
+			buttonLoad = new ToolStripButton();
 			((System.ComponentModel.ISupportInitialize)gridView).BeginInit();
 			((System.ComponentModel.ISupportInitialize)aDFFileReferenceBindingSource).BeginInit();
 			toolStrip.SuspendLayout();
@@ -48,21 +52,36 @@
 			// 
 			gridView.AllowDrop = true;
 			gridView.AllowUserToAddRows = false;
-			gridView.AllowUserToOrderColumns = true;
 			gridView.AllowUserToResizeRows = false;
 			gridView.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 			gridView.AutoGenerateColumns = false;
-			gridView.Columns.AddRange(new DataGridViewColumn[] { nameDataGridViewTextBoxColumn, filePathDataGridViewTextBoxColumn });
+			gridView.Columns.AddRange(new DataGridViewColumn[] { Index, nameDataGridViewTextBoxColumn, filePathDataGridViewTextBoxColumn });
 			gridView.DataSource = aDFFileReferenceBindingSource;
 			gridView.Location = new Point(12, 28);
 			gridView.Name = "gridView";
 			gridView.ReadOnly = true;
+			gridView.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToDisplayedHeaders;
+			gridView.RowTemplate.Resizable = DataGridViewTriState.False;
+			gridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 			gridView.ShowCellErrors = false;
 			gridView.ShowEditingIcon = false;
 			gridView.Size = new Size(776, 388);
 			gridView.TabIndex = 0;
+			gridView.CellFormatting += gridView_CellFormatting;
 			gridView.DragDrop += gridView_DragDrop;
 			gridView.DragEnter += gridView_DragEnter;
+			gridView.DragOver += gridView_DragOver;
+			gridView.MouseDown += gridView_MouseDown;
+			gridView.MouseMove += gridView_MouseMove;
+			// 
+			// Index
+			// 
+			dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleRight;
+			Index.DefaultCellStyle = dataGridViewCellStyle2;
+			Index.HeaderText = "Nr.";
+			Index.Name = "Index";
+			Index.ReadOnly = true;
+			Index.Width = 50;
 			// 
 			// nameDataGridViewTextBoxColumn
 			// 
@@ -73,10 +92,12 @@
 			// 
 			// filePathDataGridViewTextBoxColumn
 			// 
+			filePathDataGridViewTextBoxColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 			filePathDataGridViewTextBoxColumn.DataPropertyName = "FilePath";
 			filePathDataGridViewTextBoxColumn.HeaderText = "FilePath";
 			filePathDataGridViewTextBoxColumn.Name = "filePathDataGridViewTextBoxColumn";
 			filePathDataGridViewTextBoxColumn.ReadOnly = true;
+			filePathDataGridViewTextBoxColumn.Resizable = DataGridViewTriState.False;
 			// 
 			// aDFFileReferenceBindingSource
 			// 
@@ -84,7 +105,7 @@
 			// 
 			// toolStrip
 			// 
-			toolStrip.Items.AddRange(new ToolStripItem[] { buttonAdd, buttonRemove, buttonUpdate });
+			toolStrip.Items.AddRange(new ToolStripItem[] { buttonLoad, buttonSave, buttonAdd, buttonRemove, buttonUpdate });
 			toolStrip.Location = new Point(0, 0);
 			toolStrip.Name = "toolStrip";
 			toolStrip.Size = new Size(800, 25);
@@ -127,6 +148,25 @@
 			buttonClose.TabIndex = 2;
 			buttonClose.Text = "&Close";
 			buttonClose.UseVisualStyleBackColor = true;
+			buttonClose.Click += buttonClose_Click;
+			// 
+			// buttonSave
+			// 
+			buttonSave.Image = (Image)resources.GetObject("buttonSave.Image");
+			buttonSave.ImageTransparentColor = Color.Magenta;
+			buttonSave.Name = "buttonSave";
+			buttonSave.Size = new Size(51, 22);
+			buttonSave.Text = "Save";
+			buttonSave.ToolTipText = "Save configuration";
+			// 
+			// buttonLoad
+			// 
+			buttonLoad.Image = (Image)resources.GetObject("buttonLoad.Image");
+			buttonLoad.ImageTransparentColor = Color.Magenta;
+			buttonLoad.Name = "buttonLoad";
+			buttonLoad.Size = new Size(53, 22);
+			buttonLoad.Text = "Load";
+			buttonLoad.ToolTipText = "Load configuration";
 			// 
 			// MainForm
 			// 
@@ -156,7 +196,10 @@
 		private ToolStripButton buttonUpdate;
 		private DataGridViewTextBoxColumn indexDataGridViewTextBoxColumn;
 		private BindingSource aDFFileReferenceBindingSource;
+		private DataGridViewTextBoxColumn Index;
 		private DataGridViewTextBoxColumn nameDataGridViewTextBoxColumn;
 		private DataGridViewTextBoxColumn filePathDataGridViewTextBoxColumn;
+		private ToolStripButton buttonSave;
+		private ToolStripButton buttonLoad;
 	}
 }
