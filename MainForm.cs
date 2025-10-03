@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -64,34 +65,27 @@ namespace FlashFloppyUI
 		{
 			ADFSharp.InitializeEnvironment();
 
-			string fileName = "test.adf";
-			if (File.Exists(fileName))
-				File.Delete(fileName);
+            string fileName = "startup-list.adf";
+            if (File.Exists(fileName))
+                File.Delete(fileName);
+            
+			using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("FlashFloppyUI.empty.adf"))
+			using (var targetStream = File.OpenWrite(fileName))
+				stream?.CopyTo(targetStream);
 
-			var device = ADFSharp.CreateDevice(Path.GetFullPath(fileName));
-			if (ADFSharp.CreateFloppy(device, "Super Floppy!"))
-			{
-                var volume = ADFSharp.MountFloppy(device);
+            var device = ADFSharp.OpenDevice(Path.GetFullPath(fileName));
+			ADFSharp.MountDevice(device);
+			var volume = ADFSharp.MountFloppy(device);
 
-                var file = ADFSharp.OpenFile(volume, "files.txt", AdfSharp.Interop.AdfFileMode.Write);
-				var buf = Encoding.ASCII.GetBytes("Hello from FlashFloppyUI!");
-				ADFSharp.WriteFile(file, buf);
-				ADFSharp.CloseFile(file);
+			var file = ADFSharp.OpenFile(volume, "files.txt", AdfSharp.Interop.AdfFileMode.Write);
+			var buf = Encoding.ASCII.GetBytes("Hello from FlashFloppyUI!");
+			ADFSharp.WriteFile(file, buf);
+			ADFSharp.CloseFile(file);
 
-				var retVal = ADFSharp.CreateDir(volume, volume.RootBlock, "s");
-				retVal = ADFSharp.ChangeDir(volume, "s");
-				file = ADFSharp.OpenFile(volume, "Startup-Sequence", AdfSharp.Interop.AdfFileMode.Write);
-				buf = Encoding.ASCII.GetBytes("echo\r\necho === FILE LIST ===\r\ntype files.txt\r\necho\r\necho === END ===\r\nendcli\r\n");
-				ADFSharp.WriteFile(file, buf);
-				ADFSharp.CloseFile(file);
+			ADFSharp.UnmountFloppy(volume);
+			ADFSharp.UnmountDevice(device);
 
-				ADFSharp.ToRootDir(volume);
-                ADFSharp.InstallBootBlock(volume, ADFSharp.BootBlockType.temp);
-
-                ADFSharp.UnmountFloppy(volume);
-				ADFSharp.UnmountDevice(device);
-				ADFSharp.CleanUpEnvironment();
-			}
+			ADFSharp.CleanUpEnvironment();
 		}
 	}
 }

@@ -184,7 +184,10 @@ namespace FlashFloppyUI
 			private const string DllName = "adf.dll";
 			public const int ADF_DOSFS_DIRCACHE = 4;
 
-			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern AdfRetCode adfAddDeviceDriver(ref IntPtr drv);
+
+            [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
 			public static extern AdfRetCode adfToRootDir(IntPtr vol);
 
 			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
@@ -278,13 +281,13 @@ namespace FlashFloppyUI
 			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
 			public static extern IntPtr adfDevOpen(
 				string name,
-				int mode);
+				AdfAccessMode mode);
 
 			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
 			public static extern IntPtr adfDevOpenWithDriver(
 				string driverName,
 				string name,
-				int mode);
+				AdfAccessMode mode);
 
 			[DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
 			public static extern void adfDevClose(IntPtr dev);
@@ -521,7 +524,12 @@ namespace FlashFloppyUI
 		internal ADFDevice(IntPtr ptr) : base(ptr) { }
 	}
 
-	public class ADFVolume : IntPtrContainer
+	public class ADFDriver : IntPtrContainer
+	{
+		internal ADFDriver(IntPtr ptr) : base(ptr) { }
+    }
+
+    public class ADFVolume : IntPtrContainer
 	{
 		internal ADFVolume(IntPtr ptr) : base(ptr) { }
 
@@ -606,12 +614,23 @@ namespace FlashFloppyUI
 			AdfInterop.adfEnvCleanUp();
 		}
 
-		public static ADFDevice CreateDevice(string adfFile)
+		public static AdfRetCode AddDeviceDriver(out ADFDriver driver)
+		{
+			IntPtr drvPtr = IntPtr.Zero;
+            var retVal = AdfInterop.adfAddDeviceDriver(ref drvPtr);
+			driver = new ADFDriver(drvPtr);
+            return retVal;
+        }
+        public static ADFDevice CreateDevice(string adfFile)
 		{
             return new ADFDevice(AdfInterop.adfDevCreate("dump", adfFile, 80, 2, 11));
 		}
 
-		public static void MountDevice(ADFDevice device)
+		public static ADFDevice OpenDevice(string adfFile, AdfAccessMode mode = AdfAccessMode.ReadWrite)
+		{
+            return new ADFDevice(AdfInterop.adfDevOpen(adfFile, mode));
+        }
+        public static void MountDevice(ADFDevice device)
 		{
 			AdfInterop.adfDevMount(device.getPtr());
 		}

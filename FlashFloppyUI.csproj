@@ -12,10 +12,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="empty.adf" />
     <None Remove="stdboot3.bbk" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="empty.adf" />
     <EmbeddedResource Include="stdboot3.bbk" />
   </ItemGroup>
 
