@@ -9,7 +9,7 @@ namespace FlashFloppyUI
 	{
 		private Controller _controller;
 
-        private int _rowIndexFromMouseDown;
+		private int _rowIndexFromMouseDown;
 		private Rectangle _dragBoxFromMouseDown;
 
 		public MainForm()
@@ -18,7 +18,7 @@ namespace FlashFloppyUI
 
 			_controller = new Controller(new Models.Configuration());
 
-            aDFFileReferenceBindingSource.DataSource = _controller.Configuration.ADFFileReferences;
+			aDFFileReferenceBindingSource.DataSource = _controller.Configuration.ADFFileReferences;
 		}
 
 
@@ -105,7 +105,7 @@ namespace FlashFloppyUI
 			{
 				if (item is DataGridViewRow row && row.DataBoundItem is Models.ADFFileReference reference)
 					_controller.RemoveADFFileReference(reference);
-            }
+			}
 		}
 
 		private void buttonUpdate_Click(object sender, EventArgs e)
@@ -119,8 +119,8 @@ namespace FlashFloppyUI
 						_controller.SetTargetFolder(dialog.SelectedPath);
 					else
 						return;
-                }
-            }
+				}
+			}
 
 			_controller.UpdateTargetFolderContent();
 		}
@@ -152,7 +152,7 @@ namespace FlashFloppyUI
 				if (dialog.ShowDialog() == DialogResult.OK)
 				{
 					_controller.LoadConfiguration(dialog.FileName);
-                    aDFFileReferenceBindingSource.DataSource = _controller.Configuration.ADFFileReferences;
+					aDFFileReferenceBindingSource.DataSource = _controller.Configuration.ADFFileReferences;
 				}
 			}
 		}
@@ -169,5 +169,10 @@ namespace FlashFloppyUI
 					_controller.SaveConfiguration(dialog.FileName);
 			}
 		}
+
+		private void buttonClear_Click(object sender, EventArgs e)
+		{
+			_controller.ClearADFFileReferences();
+        }
 	}
 }

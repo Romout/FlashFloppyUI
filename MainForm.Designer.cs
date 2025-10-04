@@ -29,20 +29,20 @@
 		private void InitializeComponent()
 		{
 			components = new System.ComponentModel.Container();
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
 			gridView = new DataGridView();
+			Index = new DataGridViewTextBoxColumn();
+			nameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+			filePathDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
 			aDFFileReferenceBindingSource = new BindingSource(components);
 			toolStrip = new ToolStrip();
 			buttonLoad = new ToolStripButton();
 			buttonSave = new ToolStripButton();
 			buttonAdd = new ToolStripButton();
 			buttonRemove = new ToolStripButton();
+			buttonClear = new ToolStripButton();
 			buttonUpdate = new ToolStripButton();
 			buttonClose = new Button();
-			Index = new DataGridViewTextBoxColumn();
-			nameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-			filePathDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
 			((System.ComponentModel.ISupportInitialize)gridView).BeginInit();
 			((System.ComponentModel.ISupportInitialize)aDFFileReferenceBindingSource).BeginInit();
 			toolStrip.SuspendLayout();
@@ -73,77 +73,6 @@
 			gridView.MouseDown += gridView_MouseDown;
 			gridView.MouseMove += gridView_MouseMove;
 			// 
-			// aDFFileReferenceBindingSource
-			// 
-			aDFFileReferenceBindingSource.DataSource = typeof(Models.ADFFileReference);
-			// 
-			// toolStrip
-			// 
-			toolStrip.Items.AddRange(new ToolStripItem[] { buttonLoad, buttonSave, buttonAdd, buttonRemove, buttonUpdate });
-			toolStrip.Location = new Point(0, 0);
-			toolStrip.Name = "toolStrip";
-			toolStrip.Size = new Size(800, 25);
-			toolStrip.TabIndex = 1;
-			toolStrip.Text = "toolStrip";
-			// 
-			// buttonLoad
-			// 
-			buttonLoad.Image = (Image)resources.GetObject("buttonLoad.Image");
-			buttonLoad.ImageTransparentColor = Color.Magenta;
-			buttonLoad.Name = "buttonLoad";
-			buttonLoad.Size = new Size(53, 22);
-			buttonLoad.Text = "Load";
-			buttonLoad.ToolTipText = "Load configuration";
-			buttonLoad.Click += buttonLoad_Click;
-			// 
-			// buttonSave
-			// 
-			buttonSave.Image = (Image)resources.GetObject("buttonSave.Image");
-			buttonSave.ImageTransparentColor = Color.Magenta;
-			buttonSave.Name = "buttonSave";
-			buttonSave.Size = new Size(51, 22);
-			buttonSave.Text = "Save";
-			buttonSave.ToolTipText = "Save configuration";
-			buttonSave.Click += buttonSave_Click;
-			// 
-			// buttonAdd
-			// 
-			buttonAdd.Image = (Image)resources.GetObject("buttonAdd.Image");
-			buttonAdd.ImageTransparentColor = Color.Magenta;
-			buttonAdd.Name = "buttonAdd";
-			buttonAdd.Size = new Size(49, 22);
-			buttonAdd.Text = "Add";
-			buttonAdd.Click += buttonAdd_Click;
-			// 
-			// buttonRemove
-			// 
-			buttonRemove.Image = (Image)resources.GetObject("buttonRemove.Image");
-			buttonRemove.ImageTransparentColor = Color.Magenta;
-			buttonRemove.Name = "buttonRemove";
-			buttonRemove.Size = new Size(70, 22);
-			buttonRemove.Text = "Remove";
-			buttonRemove.Click += buttonRemove_Click;
-			// 
-			// buttonUpdate
-			// 
-			buttonUpdate.Image = (Image)resources.GetObject("buttonUpdate.Image");
-			buttonUpdate.ImageTransparentColor = Color.Magenta;
-			buttonUpdate.Name = "buttonUpdate";
-			buttonUpdate.Size = new Size(165, 22);
-			buttonUpdate.Text = "Update USB Drive Content";
-			buttonUpdate.Click += buttonUpdate_Click;
-			// 
-			// buttonClose
-			// 
-			buttonClose.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-			buttonClose.Location = new Point(713, 422);
-			buttonClose.Name = "buttonClose";
-			buttonClose.Size = new Size(75, 23);
-			buttonClose.TabIndex = 2;
-			buttonClose.Text = "&Close";
-			buttonClose.UseVisualStyleBackColor = true;
-			buttonClose.Click += buttonClose_Click;
-			// 
 			// Index
 			// 
 			dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleRight;
@@ -167,6 +96,86 @@
 			filePathDataGridViewTextBoxColumn.Name = "filePathDataGridViewTextBoxColumn";
 			filePathDataGridViewTextBoxColumn.ReadOnly = true;
 			filePathDataGridViewTextBoxColumn.Resizable = DataGridViewTriState.False;
+			// 
+			// aDFFileReferenceBindingSource
+			// 
+			aDFFileReferenceBindingSource.DataSource = typeof(Models.ADFFileReference);
+			// 
+			// toolStrip
+			// 
+			toolStrip.Items.AddRange(new ToolStripItem[] { buttonLoad, buttonSave, buttonAdd, buttonRemove, buttonClear, buttonUpdate });
+			toolStrip.Location = new Point(0, 0);
+			toolStrip.Name = "toolStrip";
+			toolStrip.Size = new Size(800, 25);
+			toolStrip.TabIndex = 1;
+			toolStrip.Text = "toolStrip";
+			// 
+			// buttonLoad
+			// 
+			buttonLoad.Image = Properties.Resources.Custom_Icon_Design_Pretty_Office_9_Open_file_48;
+			buttonLoad.ImageTransparentColor = Color.Magenta;
+			buttonLoad.Name = "buttonLoad";
+			buttonLoad.Size = new Size(53, 22);
+			buttonLoad.Text = "Load";
+			buttonLoad.ToolTipText = "Load configuration";
+			buttonLoad.Click += buttonLoad_Click;
+			// 
+			// buttonSave
+			// 
+			buttonSave.Image = Properties.Resources.Oxygen_Icons_org_Oxygen_Actions_document_save_48;
+			buttonSave.ImageTransparentColor = Color.Magenta;
+			buttonSave.Name = "buttonSave";
+			buttonSave.Size = new Size(51, 22);
+			buttonSave.Text = "Save";
+			buttonSave.ToolTipText = "Save configuration";
+			buttonSave.Click += buttonSave_Click;
+			// 
+			// buttonAdd
+			// 
+			buttonAdd.Image = Properties.Resources.Hopstarter_Soft_Scraps_Button_Add_48;
+			buttonAdd.ImageTransparentColor = Color.Magenta;
+			buttonAdd.Name = "buttonAdd";
+			buttonAdd.Size = new Size(49, 22);
+			buttonAdd.Text = "Add";
+			buttonAdd.Click += buttonAdd_Click;
+			// 
+			// buttonRemove
+			// 
+			buttonRemove.Image = Properties.Resources.Hopstarter_Soft_Scraps_Button_Close_48;
+			buttonRemove.ImageTransparentColor = Color.Magenta;
+			buttonRemove.Name = "buttonRemove";
+			buttonRemove.Size = new Size(70, 22);
+			buttonRemove.Text = "Remove";
+			buttonRemove.Click += buttonRemove_Click;
+			// 
+			// buttonClear
+			// 
+			buttonClear.Image = Properties.Resources.Hopstarter_Soft_Scraps_Button_Turn_Off_48;
+			buttonClear.ImageTransparentColor = Color.Magenta;
+			buttonClear.Name = "buttonClear";
+			buttonClear.Size = new Size(54, 22);
+			buttonClear.Text = "Clear";
+			buttonClear.Click += buttonClear_Click;
+			// 
+			// buttonUpdate
+			// 
+			buttonUpdate.Image = Properties.Resources.Hopstarter_Soft_Scraps_Button_Upload_48;
+			buttonUpdate.ImageTransparentColor = Color.Magenta;
+			buttonUpdate.Name = "buttonUpdate";
+			buttonUpdate.Size = new Size(165, 22);
+			buttonUpdate.Text = "Update USB Drive Content";
+			buttonUpdate.Click += buttonUpdate_Click;
+			// 
+			// buttonClose
+			// 
+			buttonClose.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+			buttonClose.Location = new Point(713, 422);
+			buttonClose.Name = "buttonClose";
+			buttonClose.Size = new Size(75, 23);
+			buttonClose.TabIndex = 2;
+			buttonClose.Text = "&Close";
+			buttonClose.UseVisualStyleBackColor = true;
+			buttonClose.Click += buttonClose_Click;
 			// 
 			// MainForm
 			// 
@@ -200,5 +209,6 @@
 		private DataGridViewTextBoxColumn Index;
 		private DataGridViewTextBoxColumn nameDataGridViewTextBoxColumn;
 		private DataGridViewTextBoxColumn filePathDataGridViewTextBoxColumn;
+		private ToolStripButton buttonClear;
 	}
 }
