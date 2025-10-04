@@ -181,7 +181,7 @@ namespace FlashFloppyUI
 
 		public static class AdfInterop
 		{
-			private const string DllName = "adf.dll";
+			private const string DllName = "Dependencies\\adf.dll";
 			public const int ADF_DOSFS_DIRCACHE = 4;
 
             [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
