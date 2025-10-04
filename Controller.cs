@@ -1,0 +1,158 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using Newtonsoft.Json;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
+
+namespace FlashFloppyUI
+{
+    internal class Controller : IDisposable
+    {
+        Models.Configuration _configuration;
+
+        public Controller(Models.Configuration configuration)
+        {
+            _configuration = configuration;
+
+            ADFSharp.InitializeEnvironment();
+        }
+
+        ~Controller() {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+        protected virtual void Dispose(bool disposing)
+        {
+            ADFSharp.CleanUpEnvironment();
+
+            if (disposing)
+                GC.SuppressFinalize(this);
+        }
+
+        internal void UpdateTargetFolderContent()
+        {
+            if (string.IsNullOrEmpty(_configuration.TargetFolder) || !Directory.Exists(_configuration.TargetFolder))
+                return;
+
+            // is there an existing configuration?
+            string metaData = Path.Combine(_configuration.TargetFolder, "metadata.ffcfg");
+            if (File.Exists(metaData))
+                File.Delete(metaData);
+
+            SaveConfiguration(metaData, _configuration);
+            foreach (var file in Directory.GetFiles(_configuration.TargetFolder, "*.adf"))
+            {
+                try
+                {
+                    File.Delete(file);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to delete {file}: {ex.Message}");
+                }
+            }
+
+            var validReferences = _configuration.ADFFileReferences.Where(r => r.FilePath != null && File.Exists(r.FilePath)).ToList();
+            int index = 1;
+            foreach (var reference in validReferences)
+            {
+                string targetPath = Path.Combine(_configuration.TargetFolder, $"DSKA{index:0000}.adf");
+                File.Copy(reference.FilePath, targetPath, true);
+                File.SetAttributes(targetPath, FileAttributes.Normal);
+                ++index;
+            }
+            CreateContentADF(validReferences);
+        }
+
+        public void CreateContentADF(IEnumerable<Models.ADFFileReference> references)
+        {
+            string fileName = Path.Combine(_configuration.TargetFolder, "DSKA0000.adf");
+            if (File.Exists(fileName))
+                File.Delete(fileName);
+
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("FlashFloppyUI.empty.adf"))
+            using (var targetStream = File.OpenWrite(fileName))
+                stream?.CopyTo(targetStream);
+
+            var device = ADFSharp.OpenDevice(Path.GetFullPath(fileName));
+            ADFSharp.MountDevice(device);
+            var volume = ADFSharp.MountFloppy(device);
+
+            var file = ADFSharp.OpenFile(volume, "files.txt", AdfSharp.Interop.AdfFileMode.Write);
+            StringBuilder sb = new StringBuilder();
+            sb.Append("FlashFloppy ADF File List\n");
+            sb.Append("=========================\n\n");
+            int index = 1;
+            foreach (var reference in references)
+                sb.Append($"{index++:0000}: {reference.Name}\n");
+
+            var buf = Encoding.ASCII.GetBytes(sb.ToString());
+            ADFSharp.WriteFile(file, buf);
+            ADFSharp.CloseFile(file);
+            ADFSharp.CloseDevice(device);
+
+            ADFSharp.UnmountFloppy(volume);
+            ADFSharp.UnmountDevice(device);
+        }
+
+        public void AddADFFileReferences(IEnumerable<string> filePaths)
+        {
+            foreach (string file in filePaths)
+                _configuration.ADFFileReferences.Add(new Models.ADFFileReference(file));
+        }
+
+        public void RemoveADFFileReference(Models.ADFFileReference reference)
+        {
+            if (reference == null)
+                return;
+            _configuration.ADFFileReferences.Remove(reference);
+        }
+
+        public void MoveADFFileReference(int fromIndex, int toIndex)
+        {
+            if (fromIndex < 0 || fromIndex >= _configuration.ADFFileReferences.Count)
+                return;
+            if (toIndex < 0 || toIndex >= _configuration.ADFFileReferences.Count)
+                return;
+            var item = _configuration.ADFFileReferences[fromIndex];
+            _configuration.ADFFileReferences.RemoveAt(fromIndex);
+            _configuration.ADFFileReferences.Insert(toIndex, item);
+        }
+
+        private Models.Configuration LoadConfigurationInternal(string filePath)
+        {
+            if (!File.Exists(filePath))
+                return new Models.Configuration();
+            return JsonConvert.DeserializeObject<Models.Configuration>(File.ReadAllText(filePath)) ?? new Models.Configuration();
+        } 
+
+        public void LoadConfiguration(string filePath)
+        {
+            if (!File.Exists(filePath))
+                return;
+            _configuration = LoadConfigurationInternal(filePath);
+        }
+
+        public void SaveConfiguration(string filePath)
+        {
+            SaveConfiguration(filePath, _configuration);
+        }
+        private void SaveConfiguration(string filePath, Models.Configuration configuration)
+        {
+            File.WriteAllText(filePath, JsonConvert.SerializeObject(configuration, Formatting.Indented));
+        }
+
+		internal void SetTargetFolder(string selectedPath)
+		{
+            _configuration.TargetFolder = selectedPath;
+        }
+
+		public Models.Configuration Configuration => _configuration;
+    }
+}

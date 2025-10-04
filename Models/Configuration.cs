@@ -11,5 +11,6 @@ namespace FlashFloppyUI.Models
 	public class Configuration
 	{
 		public BindingList<ADFFileReference> ADFFileReferences { get; set; } = new BindingList<ADFFileReference>();
-	}
+		public string TargetFolder { get; set; } = "";
+    }
 }

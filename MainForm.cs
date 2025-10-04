@@ -1,22 +1,24 @@
 using System.ComponentModel;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace FlashFloppyUI
 {
 	public partial class MainForm : Form
 	{
-		private Models.Configuration _configuration = new Models.Configuration();
+		private Controller _controller;
 
-		private int _rowIndexFromMouseDown;
+        private int _rowIndexFromMouseDown;
 		private Rectangle _dragBoxFromMouseDown;
 
 		public MainForm()
 		{
 			InitializeComponent();
 
-			aDFFileReferenceBindingSource.DataSource = _configuration.ADFFileReferences;
+			_controller = new Controller(new Models.Configuration());
+
+            aDFFileReferenceBindingSource.DataSource = _controller.Configuration.ADFFileReferences;
 		}
 
 
@@ -59,10 +61,7 @@ namespace FlashFloppyUI
 			{
 				var files = e.Data.GetData(DataFormats.FileDrop) as string[];
 				if (files != null)
-				{
-					foreach (string file in files)
-						_configuration.ADFFileReferences.Add(new Models.ADFFileReference(file));
-				}
+					_controller.AddADFFileReferences(files);
 			}
 			else
 			{
@@ -72,10 +71,7 @@ namespace FlashFloppyUI
 				if (rowIndexOfItemUnderMouseToDrop < 0 || _rowIndexFromMouseDown < 0)
 					return;
 
-				var list = (BindingList<Models.ADFFileReference>)aDFFileReferenceBindingSource.DataSource;
-				var item = list[_rowIndexFromMouseDown];
-				list.RemoveAt(_rowIndexFromMouseDown);
-				list.Insert(rowIndexOfItemUnderMouseToDrop, item);
+				_controller.MoveADFFileReference(_rowIndexFromMouseDown, rowIndexOfItemUnderMouseToDrop);
 
 				gridView.ClearSelection();
 				gridView.Rows[rowIndexOfItemUnderMouseToDrop].Selected = true;
@@ -99,10 +95,7 @@ namespace FlashFloppyUI
 				dialog.Filter = "*.adf|*.adf|All files|*.*";
 				dialog.Multiselect = true;
 				if (dialog.ShowDialog() == DialogResult.OK)
-				{
-					foreach (string file in dialog.FileNames)
-						_configuration.ADFFileReferences.Add(new Models.ADFFileReference(file));
-				}
+					_controller.AddADFFileReferences(dialog.FileNames);
 			}
 		}
 
@@ -111,35 +104,25 @@ namespace FlashFloppyUI
 			foreach (var item in gridView.SelectedRows)
 			{
 				if (item is DataGridViewRow row && row.DataBoundItem is Models.ADFFileReference reference)
-					_configuration.ADFFileReferences.Remove(reference);
-			}
+					_controller.RemoveADFFileReference(reference);
+            }
 		}
 
 		private void buttonUpdate_Click(object sender, EventArgs e)
 		{
-			ADFSharp.InitializeEnvironment();
+			if (string.IsNullOrEmpty(_controller.Configuration.TargetFolder) || !Directory.Exists(_controller.Configuration.TargetFolder))
+			{
+				using (FolderBrowserDialog dialog = new FolderBrowserDialog())
+				{
+					dialog.Description = "Select target folder (USBDrive) to copy ADF files to";
+					if (dialog.ShowDialog() == DialogResult.OK)
+						_controller.SetTargetFolder(dialog.SelectedPath);
+					else
+						return;
+                }
+            }
 
-			string fileName = "startup-list.adf";
-			if (File.Exists(fileName))
-				File.Delete(fileName);
-
-			using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("FlashFloppyUI.empty.adf"))
-			using (var targetStream = File.OpenWrite(fileName))
-				stream?.CopyTo(targetStream);
-
-			var device = ADFSharp.OpenDevice(Path.GetFullPath(fileName));
-			ADFSharp.MountDevice(device);
-			var volume = ADFSharp.MountFloppy(device);
-
-			var file = ADFSharp.OpenFile(volume, "files.txt", AdfSharp.Interop.AdfFileMode.Write);
-			var buf = Encoding.ASCII.GetBytes("Hello from FlashFloppyUI!");
-			ADFSharp.WriteFile(file, buf);
-			ADFSharp.CloseFile(file);
-
-			ADFSharp.UnmountFloppy(volume);
-			ADFSharp.UnmountDevice(device);
-
-			ADFSharp.CleanUpEnvironment();
+			_controller.UpdateTargetFolderContent();
 		}
 
 		private void gridView_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
@@ -156,6 +139,35 @@ namespace FlashFloppyUI
 		private void buttonClose_Click(object sender, EventArgs e)
 		{
 			Close();
+		}
+
+		private void buttonLoad_Click(object sender, EventArgs e)
+		{
+			using (OpenFileDialog dialog = new OpenFileDialog())
+			{
+				dialog.RestoreDirectory = true;
+				dialog.ValidateNames = true;
+				dialog.Filter = "Flash Floppy Configuration files|*.ffcfg|All files|*.*";
+				dialog.Multiselect = false;
+				if (dialog.ShowDialog() == DialogResult.OK)
+				{
+					_controller.LoadConfiguration(dialog.FileName);
+                    aDFFileReferenceBindingSource.DataSource = _controller.Configuration.ADFFileReferences;
+				}
+			}
+		}
+
+		private void buttonSave_Click(object sender, EventArgs e)
+		{
+			using (SaveFileDialog dialog = new SaveFileDialog())
+			{
+				dialog.RestoreDirectory = true;
+				dialog.ValidateNames = true;
+				dialog.Filter = "Flash Floppy Configuration files|*.ffcfg|All files|*.*";
+				dialog.OverwritePrompt = true;
+				if (dialog.ShowDialog() == DialogResult.OK)
+					_controller.SaveConfiguration(dialog.FileName);
+			}
 		}
 	}
 }
