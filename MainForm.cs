@@ -61,7 +61,7 @@ namespace FlashFloppyUI
 			{
 				var files = e.Data.GetData(DataFormats.FileDrop) as string[];
 				if (files != null)
-					_controller.AddADFFileReferences(files);
+					_controller.AddADFFileReferences(files.OrderBy(f => Path.GetFileNameWithoutExtension(f)));
 			}
 			else
 			{
