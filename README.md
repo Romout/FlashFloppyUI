@@ -1,4 +1,4 @@
 # FlashFloppyUI
 FlashFloppy is a simple USB-Stick management tool for Flash Floppy Gotek drives, specifically aimed on the Amiga use-case. the tool simply maintains a list of ADF-source paths and allows to reorder the files. Renaming of entries is also possible. In addition to being able to copy the ADF files to a folder or USB-Drive, the tool creates an additional startup ADF file as DSKA0000.ADF which will show the list of ADFs stored on the USB-Drive including their index-position on the drive. This should make it easier to start the desired game or program.
 
-FlashFloppyUI relies on adflib ( https://github.com/adflib/ADFlib ) to modify the initial disk image by writing a text file to it (files.txt). You need adf.dll in the execution directory. I have added a copy of version 0.10.5 to the dependencies folder to easy things.
+FlashFloppyUI relies on adflib ( https://github.com/adflib/ADFlib ) to modify the initial disk image by writing a text file to it (files.txt). You need adf.dll in the "dependencies" folder of the execution directory. A copy of version 0.10.5 of the adf.lib is included.
